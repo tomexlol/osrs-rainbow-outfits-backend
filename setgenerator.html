@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <body>
+
+<form>
+    <label for="hue">hue? 0-30-60-90-120-150-180-210-240-270-300-330-360</label>
+    <input type="number" id="hue" name="hue"><br>
+    <label for="twoHands">Two handed weapons?</label>
+    <input type="checkbox" id="twoHands" name="twoHands"><br>
+    <input type="submit" value="generar set">
+</form>
+
+<div id="set"></div>
+
+<script>
+
+    /*todo:
+    -mejorar el form xddd researchear sliders/listas de cosas/o algo mas intuitivo xd
+    -agregar casos para hue=gray, black, white (hacerlo un selector? + evaluarlo abajo)
+    -en vez de raw doggear al pobre div "set" con el json crudo, construir otra funcion - no se, generateViewHTML? 
+                                                    que agarre el json raw dog y le pegue a data/icons/itemid.png y a data/names.json (generarlo en py)
+                                                    y, en vez de villerear, construir una linda view del tipito (asi aprendes a alinear cosas)
+    */
+
+function generateSet(hueRange, twoHands) {
+  const visibleSlots2h = ["2h", "body", "cape", "feet", "hands", "head", "legs", "neck"];
+  const visibleSlots1h = ["body", "cape", "feet", "hands", "head", "legs", "neck", "shield", "weapon"];
+  const gearSet = {};
+  
+  return fetch('http://localhost:8000/output.json')
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+      if (twoHands) {
+        for (const slot of visibleSlots2h) {
+          gearSet[slot] = data[slot][`under_${hueRange}`][Math.floor(Math.random() * data[slot][`under_${hueRange}`].length)];
+        }
+      }
+      else {
+        for (const slot of visibleSlots1h) {
+          gearSet[slot] = data[slot][`under_${hueRange}`][Math.floor(Math.random() * data[slot][`under_${hueRange}`].length)];
+        }
+      }
+      console.log(gearSet)
+      return gearSet;
+    })
+    .catch(error => console.error(error));
+}
+
+
+  const huform = document.querySelector("form");
+  const resultDiv = document.getElementById("set");
+
+  huform.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const hue = Number(document.getElementById("hue").value)
+    const twoHands = document.getElementById("twoHands").checked
+    console.log(twoHands)
+    console.log(hue);
+    generateSet(hue, twoHands).then(result => {
+        console.log(result);
+        resultDiv.innerHTML += JSON.stringify(result);
+        resultDiv.innerHTML += "<br>"
+    })
+  })
+</script>
+
+
+
+
+    </body>
+</html>
